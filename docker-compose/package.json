@@ -1,0 +1,28 @@
+{
+  "name": "hotel-booking-docker-compose",
+  "version": "1.0.0",
+  "description": "Docker Compose deployment for Hotel Booking System",
+  "main": "init-docker-test-data.js",
+  "scripts": {
+    "init": "node init-docker-test-data.js",
+    "test": "bash test-docker-deployment.sh",
+    "start": "docker-compose up -d",
+    "stop": "docker-compose down",
+    "restart": "docker-compose restart",
+    "logs": "docker-compose logs",
+    "clean": "docker-compose down -v && docker system prune -f"
+  },
+  "dependencies": {
+    "mongoose": "^7.8.7"
+  },
+  "keywords": [
+    "hotel-booking",
+    "microservices",
+    "docker",
+    "docker-compose",
+    "mongodb",
+    "rabbitmq"
+  ],
+  "author": "Hotel Booking System Team",
+  "license": "MIT"
+}

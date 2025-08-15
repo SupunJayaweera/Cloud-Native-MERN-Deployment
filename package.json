@@ -1,0 +1,40 @@
+{
+  "name": "hotel-booking-system",
+  "version": "1.0.0",
+  "description": "A cloud-native microservices-based hotel booking system",
+  "main": "test-data.js",
+  "scripts": {
+    "start": "./start-all-services.sh",
+    "stop": "./stop-services.sh",
+    "test-data": "node test-data.js",
+    "dev": "npm run start && sleep 10 && npm run test-data",
+    "frontend": "cd frontend/hotel-booking-frontend && npm run dev",
+    "build": "cd frontend/hotel-booking-frontend && npm run build",
+    "docker:up": "cd docker-compose && docker-compose up -d",
+    "docker:down": "cd docker-compose && docker-compose down",
+    "docker:logs": "cd docker-compose && docker-compose logs -f",
+    "validate-env": "./validate-env.sh",
+    "setup": "npm install && cd frontend/hotel-booking-frontend && npm install && cd ../.. && for service in services/*; do cd \"$service\" && npm install && cd ../..; done",
+    "health-check": "node -e \"const services=['3001','3002','3003','3004','3005','3006']; Promise.all(services.map(p=>fetch('http://localhost:'+p+'/health').then(r=>console.log('Port '+p+': '+(r.ok?'✅':'❌'))).catch(()=>console.log('Port '+p+': ❌')))).then(()=>process.exit(0))\""
+  },
+  "keywords": [
+    "microservices",
+    "hotel",
+    "booking",
+    "nodejs",
+    "react",
+    "mongodb",
+    "rabbitmq",
+    "saga",
+    "event-driven"
+  ],
+  "author": "Supun",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "mongodb": "^6.18.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

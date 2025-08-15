@@ -1,0 +1,295 @@
+services:
+  # MongoDB instances for each service
+  user-db:
+    image: mongo:7.0
+    container_name: user-db
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: userdb
+    ports:
+      - "27017:27017"
+    volumes:
+      - user_data:/data/db
+    networks:
+      - hotel-network
+
+  hotel-db:
+    image: mongo:7.0
+    container_name: hotel-db
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: hoteldb
+    ports:
+      - "27018:27017"
+    volumes:
+      - hotel_data:/data/db
+    networks:
+      - hotel-network
+
+  room-db:
+    image: mongo:7.0
+    container_name: room-db
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: roomdb
+    ports:
+      - "27019:27017"
+    volumes:
+      - room_data:/data/db
+    networks:
+      - hotel-network
+
+  booking-db:
+    image: mongo:7.0
+    container_name: booking-db
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: bookingdb
+    ports:
+      - "27020:27017"
+    volumes:
+      - booking_data:/data/db
+    networks:
+      - hotel-network
+
+  payment-db:
+    image: mongo:7.0
+    container_name: payment-db
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: paymentdb
+    ports:
+      - "27021:27017"
+    volumes:
+      - payment_data:/data/db
+    networks:
+      - hotel-network
+
+  notification-db:
+    image: mongo:7.0
+    container_name: notification-db
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: notificationdb
+    ports:
+      - "27022:27017"
+    volumes:
+      - notification_data:/data/db
+    networks:
+      - hotel-network
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password123
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - hotel-network
+
+  # Microservices
+  user-service:
+    build:
+      context: ../services/user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    restart: unless-stopped
+    env_file:
+      - ../services/user-service/.env.docker
+    ports:
+      - "3001:3001"
+    depends_on:
+      - user-db
+      - rabbitmq
+    networks:
+      - hotel-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  hotel-service:
+    build:
+      context: ../services/hotel-service
+      dockerfile: Dockerfile
+    container_name: hotel-service
+    restart: unless-stopped
+    env_file:
+      - ../services/hotel-service/.env.docker
+    ports:
+      - "3002:3002"
+    depends_on:
+      - hotel-db
+      - rabbitmq
+    networks:
+      - hotel-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  room-service:
+    build:
+      context: ../services/room-service
+      dockerfile: Dockerfile
+    container_name: room-service
+    restart: unless-stopped
+    env_file:
+      - ../services/room-service/.env.docker
+    ports:
+      - "3003:3003"
+    depends_on:
+      - room-db
+      - rabbitmq
+    networks:
+      - hotel-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  booking-service:
+    build:
+      context: ../services/booking-service
+      dockerfile: Dockerfile
+    container_name: booking-service
+    restart: unless-stopped
+    env_file:
+      - ../services/booking-service/.env.docker
+    ports:
+      - "3004:3004"
+    depends_on:
+      - booking-db
+      - rabbitmq
+      - user-service
+      - room-service
+      - payment-service
+      - notification-service
+    networks:
+      - hotel-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  payment-service:
+    build:
+      context: ../services/payment-service
+      dockerfile: Dockerfile
+    container_name: payment-service
+    restart: unless-stopped
+    env_file:
+      - ../services/payment-service/.env.docker
+    ports:
+      - "3005:3005"
+    depends_on:
+      - payment-db
+      - rabbitmq
+    networks:
+      - hotel-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  notification-service:
+    build:
+      context: ../services/notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    restart: unless-stopped
+    env_file:
+      - ../services/notification-service/.env.docker
+    ports:
+      - "3006:3006"
+    depends_on:
+      - notification-db
+      - rabbitmq
+    networks:
+      - hotel-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend
+  frontend:
+    build:
+      context: ../frontend/hotel-booking-frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_BASE_URL: http://localhost:3004
+    ports:
+      - "3000:3000"
+    depends_on:
+      - booking-service
+    networks:
+      - hotel-network
+
+  # Data Initialization Service
+  data-init:
+    image: node:18-alpine
+    container_name: data-init
+    working_dir: /app
+    volumes:
+      - ./init-docker-test-data.js:/app/init-docker-test-data.js
+      - ./package.json:/app/package.json
+    command: >
+      sh -c "
+        echo 'Waiting for services to be ready...' &&
+        sleep 30 &&
+        npm install mongoose &&
+        echo 'Initializing test data...' &&
+        node init-docker-test-data.js &&
+        echo 'Test data initialization completed!'
+      "
+    depends_on:
+      - user-service
+      - hotel-service
+      - room-service
+      - booking-service
+      - payment-service
+      - notification-service
+    networks:
+      - hotel-network
+    restart: "no"
+
+volumes:
+  user_data:
+  hotel_data:
+  room_data:
+  booking_data:
+  payment_data:
+  notification_data:
+  rabbitmq_data:
+
+networks:
+  hotel-network:
+    driver: bridge
