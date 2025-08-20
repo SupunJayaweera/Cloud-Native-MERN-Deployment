@@ -12,25 +12,25 @@ async function initializeDockerTestData() {
   console.log("🚀 Initializing test data for Docker environment...");
 
   try {
-    // Connect to each database (from host machine to Docker containers)
+    // Connect to each database (using Docker container names)
     const connections = {
       user: await mongoose.createConnection(
-        "mongodb://admin:password123@localhost:27017/userdb?authSource=admin"
+        "mongodb://admin:password123@user-db:27017/userdb?authSource=admin"
       ),
       hotel: await mongoose.createConnection(
-        "mongodb://admin:password123@localhost:27018/hoteldb?authSource=admin"
+        "mongodb://admin:password123@hotel-db:27017/hoteldb?authSource=admin"
       ),
       room: await mongoose.createConnection(
-        "mongodb://admin:password123@localhost:27019/roomdb?authSource=admin"
+        "mongodb://admin:password123@room-db:27017/roomdb?authSource=admin"
       ),
       booking: await mongoose.createConnection(
-        "mongodb://admin:password123@localhost:27020/bookingdb?authSource=admin"
+        "mongodb://admin:password123@booking-db:27017/bookingdb?authSource=admin"
       ),
       payment: await mongoose.createConnection(
-        "mongodb://admin:password123@localhost:27021/paymentdb?authSource=admin"
+        "mongodb://admin:password123@payment-db:27017/paymentdb?authSource=admin"
       ),
       notification: await mongoose.createConnection(
-        "mongodb://admin:password123@localhost:27022/notificationdb?authSource=admin"
+        "mongodb://admin:password123@notification-db:27017/notificationdb?authSource=admin"
       ),
     };
 
