@@ -1,9 +1,15 @@
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+  import.meta.env.VITE_API_BASE_URL !== undefined
+    ? import.meta.env.VITE_API_BASE_URL
+    : "http://localhost:3001";
 const HOTEL_API_BASE_URL =
-  import.meta.env.VITE_HOTEL_API_BASE_URL || "http://localhost:3002";
+  import.meta.env.VITE_HOTEL_API_BASE_URL !== undefined
+    ? import.meta.env.VITE_HOTEL_API_BASE_URL
+    : "http://localhost:3002";
 const ROOM_API_BASE_URL =
-  import.meta.env.VITE_ROOM_API_BASE_URL || "http://localhost:3003";
+  import.meta.env.VITE_ROOM_API_BASE_URL !== undefined
+    ? import.meta.env.VITE_ROOM_API_BASE_URL
+    : "http://localhost:3003";
 
 class AdminService {
   async createHotel(hotelData, token) {

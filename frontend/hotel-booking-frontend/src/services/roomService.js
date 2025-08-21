@@ -1,11 +1,14 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_ROOM_API_BASE_URL || 'http://localhost:3003';
+const API_BASE_URL =
+  import.meta.env.VITE_ROOM_API_BASE_URL !== undefined
+    ? import.meta.env.VITE_ROOM_API_BASE_URL
+    : "http://localhost:3003";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -22,9 +25,8 @@ export const roomService = {
 
   async checkAvailability(roomId, checkIn, checkOut) {
     const response = await api.get(`/api/rooms/${roomId}/availability`, {
-      params: { checkIn, checkOut }
+      params: { checkIn, checkOut },
     });
     return response.data;
-  }
+  },
 };
-
