@@ -291,7 +291,8 @@ EOF
                                 "email": "jenkins-test-${BUILD_NUMBER}@example.com",
                                 "username": "jenkins${BUILD_NUMBER}",
                                 "password": "password123",
-                                "phone": "+1234567890"
+                                "phone": "+1234567890",
+                                "role": "admin"
                               }'
                         """
                         echo '✅ User registration test passed'
