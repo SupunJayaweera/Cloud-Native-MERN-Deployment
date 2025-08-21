@@ -1,0 +1,96 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Docker containers metrics via cAdvisor
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"]
+    scrape_interval: 5s
+    metrics_path: /metrics
+
+  # Node/system metrics
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+    scrape_interval: 5s
+
+  # Hotel Booking Application Services
+  - job_name: "user-service"
+    static_configs:
+      - targets: ["user-service:3001"]
+    metrics_path: "/health"
+    scrape_interval: 10s
+
+  - job_name: "hotel-service"
+    static_configs:
+      - targets: ["hotel-service:3002"]
+    metrics_path: "/health"
+    scrape_interval: 10s
+
+  - job_name: "room-service"
+    static_configs:
+      - targets: ["room-service:3003"]
+    metrics_path: "/health"
+    scrape_interval: 10s
+
+  - job_name: "booking-service"
+    static_configs:
+      - targets: ["booking-service:3004"]
+    metrics_path: "/health"
+    scrape_interval: 10s
+
+  - job_name: "payment-service"
+    static_configs:
+      - targets: ["payment-service:3005"]
+    metrics_path: "/health"
+    scrape_interval: 10s
+
+  - job_name: "notification-service"
+    static_configs:
+      - targets: ["notification-service:3006"]
+    metrics_path: "/health"
+    scrape_interval: 10s
+
+  # MongoDB instances
+  - job_name: "mongodb"
+    static_configs:
+      - targets:
+          [
+            "user-db:27017",
+            "hotel-db:27017",
+            "room-db:27017",
+            "booking-db:27017",
+            "payment-db:27017",
+            "notification-db:27017",
+          ]
+    scrape_interval: 30s
+
+  # RabbitMQ
+  - job_name: "rabbitmq"
+    static_configs:
+      - targets: ["rabbitmq:15672"]
+    scrape_interval: 30s
+
+  # Nginx
+  - job_name: "nginx"
+    static_configs:
+      - targets: ["nginx:80"]
+    metrics_path: "/health"
+    scrape_interval: 10s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093

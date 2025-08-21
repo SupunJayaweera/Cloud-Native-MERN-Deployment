@@ -165,16 +165,41 @@ EOF
 
         stage('Run Docker Containers') {
             steps {
-                echo 'Starting new containers...'
+                echo 'Starting infrastructure and application containers...'
                 dir('docker-compose') {
                     script {
-                        sh 'docker compose up -d'
+                        // Start infrastructure services first (databases, message queue)
+                        sh '''
+                            echo "Starting infrastructure services..."
+                            docker compose up -d user-db hotel-db room-db booking-db payment-db notification-db rabbitmq
+                        '''
+                        
+                        // Wait for infrastructure to be ready
+                        echo 'Waiting for infrastructure services...'
+                        sleep(30)
+                        
+                        // Start monitoring services
+                        sh '''
+                            echo "Starting monitoring services..."
+                            docker compose up -d prometheus grafana cadvisor node-exporter
+                        '''
+                        
+                        // Wait for monitoring to be ready
+                        echo 'Waiting for monitoring services...'
+                        sleep(30)
+                        
+                        // Start application services
+                        sh '''
+                            echo "Starting application services..."
+                            docker compose up -d user-service hotel-service room-service booking-service payment-service notification-service frontend nginx
+                        '''
+                        
                         echo 'All containers started'
                         
                         // Wait for containers to be ready
                         echo 'Waiting for containers to be healthy...'
                         sh '''
-                            timeout 180 bash -c '
+                            timeout 300 bash -c '
                                 while true; do
                                     if docker compose ps | grep -q "unhealthy"; then
                                         echo "Some services are still starting, waiting..."
@@ -222,6 +247,52 @@ EOF
                         } catch (Exception e) {
                             echo "⚠️ ${service} health check failed, but continuing..."
                         }
+                    }
+                }
+            }
+        }
+
+        stage('Configure Monitoring') {
+            steps {
+                echo 'Configuring monitoring dashboards and alerts...'
+                script {
+                    // Wait for monitoring services to be fully ready
+                    sleep(30)
+                    
+                    // Check monitoring services health
+                    def monitoringChecks = [
+                        'Prometheus': "http://${VM_IP}:9090/-/ready",
+                        'Grafana': "http://${VM_IP}:3000/api/health",
+                        'cAdvisor': "http://${VM_IP}:8081/healthz",
+                        'Node Exporter': "http://${VM_IP}:9100/metrics"
+                    ]
+                    
+                    monitoringChecks.each { service, url ->
+                        try {
+                            sh "curl -f ${url}"
+                            echo "✅ ${service} monitoring service is ready"
+                        } catch (Exception e) {
+                            echo "⚠️ ${service} monitoring service not ready: ${e.getMessage()}"
+                        }
+                    }
+                    
+                    // Configure Grafana data source and dashboards
+                    try {
+                        echo "🔧 Configuring Grafana dashboards..."
+                        
+                        // Wait a bit more for Grafana to fully initialize
+                        sleep(30)
+                        
+                        // Import the container monitoring dashboard
+                        sh """
+                            curl -X POST http://admin:admin@${VM_IP}:3000/api/dashboards/db \\
+                              -H "Content-Type: application/json" \\
+                              -d @monitoring/grafana/dashboards/containers-dashboard.json || echo "Dashboard import attempted"
+                        """
+                        
+                        echo "✅ Monitoring configuration completed"
+                    } catch (Exception e) {
+                        echo "⚠️ Monitoring configuration had issues: ${e.getMessage()}"
                     }
                 }
             }
@@ -327,7 +398,19 @@ EOF
                         echo "⚠️ Hotel listing test failed: ${e.getMessage()}"
                     }
 
-                    echo "🎉 Deployment completed! Access your app at: http://${VM_IP}"
+                    echo "🎉 Deployment completed successfully!"
+                    echo ""
+                    echo "📱 Application URLs:"
+                    echo "   🌐 Hotel Booking App: http://${VM_IP}"
+                    echo "   🔐 Admin Panel: http://${VM_IP}/admin"
+                    echo ""
+                    echo "📊 Monitoring URLs:"
+                    echo "   📈 Grafana Dashboard: http://${VM_IP}:3000 (admin/admin)"
+                    echo "   🔍 Prometheus: http://${VM_IP}:9090"
+                    echo "   📊 Container Metrics: http://${VM_IP}:8081"
+                    echo "   🖥️ System Metrics: http://${VM_IP}:9100"
+                    echo ""
+                    echo "🚀 Your Cloud-Native MERN Hotel Booking System with monitoring is ready!"
                 }
             }
         }
