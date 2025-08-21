@@ -15,7 +15,7 @@ After deployment, access monitoring services at:
 
 | Service               | URL                            | Credentials |
 | --------------------- | ------------------------------ | ----------- |
-| **Grafana Dashboard** | http://YOUR_VM_IP:3000         | admin/admin |
+| **Grafana Dashboard** | http://YOUR_VM_IP:3007         | admin/admin |
 | **Prometheus**        | http://YOUR_VM_IP:9090         | None        |
 | **Container Metrics** | http://YOUR_VM_IP:8081         | None        |
 | **System Metrics**    | http://YOUR_VM_IP:9100/metrics | None        |

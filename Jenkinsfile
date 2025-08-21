@@ -262,7 +262,7 @@ EOF
                     // Check monitoring services health
                     def monitoringChecks = [
                         'Prometheus': "http://${VM_IP}:9090/-/ready",
-                        'Grafana': "http://${VM_IP}:3000/api/health",
+                        'Grafana': "http://${VM_IP}:3007/api/health",
                         'cAdvisor': "http://${VM_IP}:8081/healthz",
                         'Node Exporter': "http://${VM_IP}:9100/metrics"
                     ]
@@ -285,7 +285,7 @@ EOF
                         
                         // Import the container monitoring dashboard
                         sh """
-                            curl -X POST http://admin:admin@${VM_IP}:3000/api/dashboards/db \\
+                            curl -X POST http://admin:admin@${VM_IP}:3007/api/dashboards/db \\
                               -H "Content-Type: application/json" \\
                               -d @monitoring/grafana/dashboards/containers-dashboard.json || echo "Dashboard import attempted"
                         """
@@ -405,7 +405,7 @@ EOF
                     echo "   🔐 Admin Panel: http://${VM_IP}/admin"
                     echo ""
                     echo "📊 Monitoring URLs:"
-                    echo "   📈 Grafana Dashboard: http://${VM_IP}:3000 (admin/admin)"
+                    echo "   📈 Grafana Dashboard: http://${VM_IP}:3007 (admin/admin)"
                     echo "   🔍 Prometheus: http://${VM_IP}:9090"
                     echo "   📊 Container Metrics: http://${VM_IP}:8081"
                     echo "   🖥️ System Metrics: http://${VM_IP}:9100"
