@@ -279,17 +279,17 @@ services:
       context: ../frontend/hotel-booking-frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_BASE_URL: /api/users
-        VITE_HOTEL_API_BASE_URL: /api/hotels
-        VITE_ROOM_API_BASE_URL: /api/rooms
-        VITE_BOOKING_API_BASE_URL: /api/bookings
+        VITE_API_BASE_URL: ""
+        VITE_HOTEL_API_BASE_URL: ""
+        VITE_ROOM_API_BASE_URL: ""
+        VITE_BOOKING_API_BASE_URL: ""
     container_name: frontend
     restart: unless-stopped
     environment:
-      VITE_API_BASE_URL: /api/users
-      VITE_HOTEL_API_BASE_URL: /api/hotels
-      VITE_ROOM_API_BASE_URL: /api/rooms
-      VITE_BOOKING_API_BASE_URL: /api/bookings
+      VITE_API_BASE_URL: ""
+      VITE_HOTEL_API_BASE_URL: ""
+      VITE_ROOM_API_BASE_URL: ""
+      VITE_BOOKING_API_BASE_URL: ""
     depends_on:
       - booking-service
     networks:
