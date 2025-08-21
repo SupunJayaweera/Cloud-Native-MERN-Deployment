@@ -1,9 +1,13 @@
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+const HOTEL_API_BASE_URL =
+  import.meta.env.VITE_HOTEL_API_BASE_URL || "http://localhost:3002";
+const ROOM_API_BASE_URL =
+  import.meta.env.VITE_ROOM_API_BASE_URL || "http://localhost:3003";
 
 class AdminService {
   async createHotel(hotelData, token) {
-    const response = await fetch(`http://localhost:3002/api/hotels`, {
+    const response = await fetch(`${HOTEL_API_BASE_URL}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -22,7 +26,7 @@ class AdminService {
 
   async updateHotel(hotelId, hotelData, token) {
     const response = await fetch(
-      `http://localhost:3002/api/hotels/${hotelId}`,
+      `${HOTEL_API_BASE_URL}/${hotelId}`,
       {
         method: "PUT",
         headers: {
@@ -43,7 +47,7 @@ class AdminService {
 
   async deleteHotel(hotelId, token) {
     const response = await fetch(
-      `http://localhost:3002/api/hotels/${hotelId}`,
+      `${HOTEL_API_BASE_URL}/${hotelId}`,
       {
         method: "DELETE",
         headers: {
@@ -61,7 +65,7 @@ class AdminService {
   }
 
   async createRoom(roomData, token) {
-    const response = await fetch(`http://localhost:3003/api/rooms`, {
+    const response = await fetch(`${ROOM_API_BASE_URL}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -79,7 +83,7 @@ class AdminService {
   }
 
   async updateRoom(roomId, roomData, token) {
-    const response = await fetch(`http://localhost:3003/api/rooms/${roomId}`, {
+    const response = await fetch(`${ROOM_API_BASE_URL}/${roomId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -97,7 +101,7 @@ class AdminService {
   }
 
   async deleteRoom(roomId, token) {
-    const response = await fetch(`http://localhost:3003/api/rooms/${roomId}`, {
+    const response = await fetch(`${ROOM_API_BASE_URL}/${roomId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -114,7 +118,7 @@ class AdminService {
 
   async getRoomsByHotel(hotelId, token) {
     const response = await fetch(
-      `http://localhost:3003/api/rooms/hotel/${hotelId}`,
+      `${ROOM_API_BASE_URL}/hotel/${hotelId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -131,7 +135,7 @@ class AdminService {
   }
 
   async getRoomById(roomId, token) {
-    const response = await fetch(`http://localhost:3003/api/rooms/${roomId}`, {
+    const response = await fetch(`${ROOM_API_BASE_URL}/${roomId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
