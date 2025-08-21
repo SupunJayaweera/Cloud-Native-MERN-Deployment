@@ -3,6 +3,18 @@ FROM node:20 as builder
 
 WORKDIR /app
 
+# Accept build arguments for API URLs
+ARG VITE_API_BASE_URL=/api/users
+ARG VITE_HOTEL_API_BASE_URL=/api/hotels
+ARG VITE_ROOM_API_BASE_URL=/api/rooms
+ARG VITE_BOOKING_API_BASE_URL=/api/bookings
+
+# Set them as environment variables for the build
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_HOTEL_API_BASE_URL=$VITE_HOTEL_API_BASE_URL
+ENV VITE_ROOM_API_BASE_URL=$VITE_ROOM_API_BASE_URL
+ENV VITE_BOOKING_API_BASE_URL=$VITE_BOOKING_API_BASE_URL
+
 # Copy package files
 COPY package*.json ./
 

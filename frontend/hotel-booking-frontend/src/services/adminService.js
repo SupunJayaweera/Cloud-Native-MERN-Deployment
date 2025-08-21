@@ -25,17 +25,14 @@ class AdminService {
   }
 
   async updateHotel(hotelId, hotelData, token) {
-    const response = await fetch(
-      `${HOTEL_API_BASE_URL}/${hotelId}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(hotelData),
-      }
-    );
+    const response = await fetch(`${HOTEL_API_BASE_URL}/${hotelId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(hotelData),
+    });
 
     if (!response.ok) {
       const error = await response.json();
@@ -46,15 +43,12 @@ class AdminService {
   }
 
   async deleteHotel(hotelId, token) {
-    const response = await fetch(
-      `${HOTEL_API_BASE_URL}/${hotelId}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`${HOTEL_API_BASE_URL}/${hotelId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
       const error = await response.json();
@@ -117,14 +111,11 @@ class AdminService {
   }
 
   async getRoomsByHotel(hotelId, token) {
-    const response = await fetch(
-      `${ROOM_API_BASE_URL}/hotel/${hotelId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`${ROOM_API_BASE_URL}/hotel/${hotelId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
       const error = await response.json();
