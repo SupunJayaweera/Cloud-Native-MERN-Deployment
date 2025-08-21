@@ -105,35 +105,46 @@ EOF
 
         stage('Build Docker Images') {
             steps {
-                echo 'Building Docker images...'
+                echo 'Building Docker images individually...'
                 dir('docker-compose') {
                     script {
                         // Check network connectivity first
                         echo 'Testing network connectivity...'
                         sh 'curl -I https://registry.npmjs.org/ || echo "NPM registry connectivity issue detected"'
                         
-                        retry(2) {
-                            try {
-                                // Set Docker build environment for better networking
-                                sh '''
-                                    export DOCKER_BUILDKIT=1
-                                    export BUILDKIT_PROGRESS=plain
-                                    docker compose build --no-cache
-                                '''
-                                echo 'All Docker images built successfully'
-                            } catch (Exception e) {
-                                echo "Build failed, retrying with different strategy..."
-                                // Clean up any partial builds
-                                sh 'docker system prune -f'
-                                // Try building with cache enabled (sequential build)
-                                sh '''
-                                    export DOCKER_BUILDKIT=1
-                                    export BUILDKIT_PROGRESS=plain
-                                    docker compose build
-                                '''
-                                echo 'Docker images built successfully on retry'
+                        // Set Docker build environment
+                        env.DOCKER_BUILDKIT = '1'
+                        env.BUILDKIT_PROGRESS = 'plain'
+                        
+                        // List of services to build in order
+                        def services = [
+                            'user-service',
+                            'hotel-service', 
+                            'room-service',
+                            'payment-service',
+                            'notification-service',
+                            'booking-service',
+                            'frontend'
+                        ]
+                        
+                        // Build each service individually with timeout
+                        services.each { service ->
+                            echo "🔨 Building ${service}..."
+                            timeout(time: 10, unit: 'MINUTES') {
+                                retry(2) {
+                                    try {
+                                        sh "docker compose build --no-cache ${service}"
+                                        echo "✅ ${service} built successfully"
+                                    } catch (Exception e) {
+                                        echo "❌ ${service} build failed, retrying with cache..."
+                                        sh "docker compose build ${service}"
+                                        echo "✅ ${service} built successfully on retry"
+                                    }
+                                }
                             }
                         }
+                        
+                        echo '🎉 All Docker images built successfully!'
                     }
                 }
             }
