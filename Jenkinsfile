@@ -328,69 +328,23 @@ EOF
                 
                 // Archive artifacts
                 archiveArtifacts artifacts: 'docker-compose/*.yml', allowEmptyArchive: true
-                
-                // Publish test results if they exist
-                publishTestResults testResultsPattern: '**/test-results.xml', allowEmptyResults: true
             }
         }
         
         success {
-            echo 'Pipeline succeeded!'
-            script {
-                // Send success notification
-                emailext(
-                    subject: "✅ Hotel Booking System - Build #${BUILD_NUMBER} Successful",
-                    body: """
-                        <h2>Build Successful!</h2>
-                        <p><strong>Project:</strong> ${APP_NAME}</p>
-                        <p><strong>Build Number:</strong> ${BUILD_NUMBER}</p>
-                        <p><strong>Git Commit:</strong> ${GIT_COMMIT_SHORT}</p>
-                        <p><strong>Access URL:</strong> <a href="http://${VM_IP}">http://${VM_IP}</a></p>
-                        <p><strong>Build URL:</strong> <a href="${BUILD_URL}">${BUILD_URL}</a></p>
-                    """,
-                    mimeType: 'text/html',
-                    to: 'your-email@domain.com'
-                )
-            }
+            echo '🎉 Pipeline succeeded!'
+            echo "✅ Deployment completed successfully!"
+            echo "🌐 Access your app at: http://${VM_IP}"
         }
         
         failure {
-            echo 'Pipeline failed!'
-            script {
-                // Send failure notification
-                emailext(
-                    subject: "❌ Hotel Booking System - Build #${BUILD_NUMBER} Failed",
-                    body: """
-                        <h2>Build Failed!</h2>
-                        <p><strong>Project:</strong> ${APP_NAME}</p>
-                        <p><strong>Build Number:</strong> ${BUILD_NUMBER}</p>
-                        <p><strong>Git Commit:</strong> ${GIT_COMMIT_SHORT}</p>
-                        <p><strong>Build URL:</strong> <a href="${BUILD_URL}">${BUILD_URL}</a></p>
-                        <p><strong>Console Output:</strong> <a href="${BUILD_URL}console">${BUILD_URL}console</a></p>
-                    """,
-                    mimeType: 'text/html',
-                    to: 'your-email@domain.com'
-                )
-            }
+            echo '❌ Pipeline failed!'
+            echo "🔍 Check the console output for details"
         }
         
         unstable {
-            echo 'Pipeline completed with warnings!'
-            script {
-                emailext(
-                    subject: "⚠️ Hotel Booking System - Build #${BUILD_NUMBER} Unstable",
-                    body: """
-                        <h2>Build Completed with Warnings</h2>
-                        <p><strong>Project:</strong> ${APP_NAME}</p>
-                        <p><strong>Build Number:</strong> ${BUILD_NUMBER}</p>
-                        <p><strong>Git Commit:</strong> ${GIT_COMMIT_SHORT}</p>
-                        <p><strong>Access URL:</strong> <a href="http://${VM_IP}">http://${VM_IP}</a></p>
-                        <p><strong>Build URL:</strong> <a href="${BUILD_URL}">${BUILD_URL}</a></p>
-                    """,
-                    mimeType: 'text/html',
-                    to: 'your-email@domain.com'
-                )
-            }
+            echo '⚠️ Pipeline completed with warnings!'
+            echo "🌐 App might still be accessible at: http://${VM_IP}"
         }
     }
 }
