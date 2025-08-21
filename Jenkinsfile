@@ -118,18 +118,18 @@ EOF
                                 sh '''
                                     export DOCKER_BUILDKIT=1
                                     export BUILDKIT_PROGRESS=plain
-                                    docker compose build --no-cache --parallel 1
+                                    docker compose build --no-cache
                                 '''
                                 echo 'All Docker images built successfully'
                             } catch (Exception e) {
                                 echo "Build failed, retrying with different strategy..."
                                 // Clean up any partial builds
                                 sh 'docker system prune -f'
-                                // Try building with cache and different npm settings
+                                // Try building with cache enabled (sequential build)
                                 sh '''
                                     export DOCKER_BUILDKIT=1
                                     export BUILDKIT_PROGRESS=plain
-                                    docker compose build --parallel 1
+                                    docker compose build
                                 '''
                                 echo 'Docker images built successfully on retry'
                             }
