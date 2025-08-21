@@ -261,15 +261,34 @@ EOF
                     def services = ['frontend', 'user-service', 'hotel-service', 'room-service', 'booking-service', 'payment-service', 'notification-service']
                     
                     services.each { service ->
-                        retry(3) {
-                            sh """
-                                docker tag docker-compose-${service} ${DOCKER_HUB_REPO}/hotel-booking-${service}:latest
-                                docker tag docker-compose-${service} ${DOCKER_HUB_REPO}/hotel-booking-${service}:${BUILD_NUMBER}
-                                echo 'Pushing ${service} to Docker Hub...'
-                                docker push ${DOCKER_HUB_REPO}/hotel-booking-${service}:latest
-                                docker push ${DOCKER_HUB_REPO}/hotel-booking-${service}:${BUILD_NUMBER}
-                                echo '✅ ${service} pushed successfully'
-                            """
+                        echo "🏷️ Tagging and pushing ${service}..."
+                        
+                        // Tag images first
+                        sh """
+                            docker tag docker-compose-${service} ${DOCKER_HUB_REPO}/hotel-booking-${service}:latest
+                            docker tag docker-compose-${service} ${DOCKER_HUB_REPO}/hotel-booking-${service}:${BUILD_NUMBER}
+                        """
+                        
+                        // Push with timeout and retry logic
+                        timeout(time: 15, unit: 'MINUTES') {
+                            retry(3) {
+                                try {
+                                    sh """
+                                        echo 'Pushing ${service}:latest to Docker Hub...'
+                                        docker push ${DOCKER_HUB_REPO}/hotel-booking-${service}:latest
+                                        
+                                        echo 'Pushing ${service}:${BUILD_NUMBER} to Docker Hub...'
+                                        docker push ${DOCKER_HUB_REPO}/hotel-booking-${service}:${BUILD_NUMBER}
+                                        
+                                        echo '✅ ${service} pushed successfully'
+                                    """
+                                } catch (Exception e) {
+                                    echo "❌ Push failed for ${service}, retrying... Error: ${e.getMessage()}"
+                                    // Wait a bit before retry
+                                    sleep(30)
+                                    throw e
+                                }
+                            }
                         }
                     }
                 }
