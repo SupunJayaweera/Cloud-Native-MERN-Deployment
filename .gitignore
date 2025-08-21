@@ -113,7 +113,7 @@ tmp/
 temp/
 
 # Docker
-.dockerignore
+# .dockerignore
 
 # Production builds
 frontend/hotel-booking-frontend/dist/

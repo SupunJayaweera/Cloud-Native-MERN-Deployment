@@ -15,11 +15,19 @@ ENV VITE_HOTEL_API_BASE_URL=$VITE_HOTEL_API_BASE_URL
 ENV VITE_ROOM_API_BASE_URL=$VITE_ROOM_API_BASE_URL
 ENV VITE_BOOKING_API_BASE_URL=$VITE_BOOKING_API_BASE_URL
 
+# Configure npm for better network handling
+RUN npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-retries 3 && \
+    npm config set registry https://registry.npmjs.org/
+
 # Copy package files
 COPY package*.json ./
 
-# Install ALL dependencies (including dev dependencies for build)
-RUN npm ci
+# Install ALL dependencies with retry logic
+RUN npm ci --verbose --no-audit --no-fund || \
+    (sleep 10 && npm ci --verbose --no-audit --no-fund) || \
+    (sleep 30 && npm install --verbose --no-audit --no-fund)
 
 # Copy source code
 COPY . .

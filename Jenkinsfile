@@ -2,18 +2,13 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_REPO = 'supun3998'  //  Docker Hub username
-        VM_IP = '192.168.46.139'
-    }
-
-    environment {
         // Docker Hub credentials (configure in Jenkins credentials)
         DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
-        DOCKER_HUB_REPO = 'cloud-project-dockerhub'
+        DOCKER_HUB_REPO = 'supun3998'  // Docker Hub username
+        VM_IP = '192.168.46.139'
         
         // Application configuration
         APP_NAME = 'hotel-booking-system'
-        VM_IP = '192.168.46.139'
         
         // Version management
         VERSION = "${env.BUILD_NUMBER}"
@@ -113,8 +108,32 @@ EOF
                 echo 'Building Docker images...'
                 dir('docker-compose') {
                     script {
-                        sh 'docker-compose build --no-cache'
-                        echo 'All Docker images built successfully'
+                        // Check network connectivity first
+                        echo 'Testing network connectivity...'
+                        sh 'curl -I https://registry.npmjs.org/ || echo "NPM registry connectivity issue detected"'
+                        
+                        retry(2) {
+                            try {
+                                // Set Docker build environment for better networking
+                                sh '''
+                                    export DOCKER_BUILDKIT=1
+                                    export BUILDKIT_PROGRESS=plain
+                                    docker compose build --no-cache --parallel 1
+                                '''
+                                echo 'All Docker images built successfully'
+                            } catch (Exception e) {
+                                echo "Build failed, retrying with different strategy..."
+                                // Clean up any partial builds
+                                sh 'docker system prune -f'
+                                // Try building with cache and different npm settings
+                                sh '''
+                                    export DOCKER_BUILDKIT=1
+                                    export BUILDKIT_PROGRESS=plain
+                                    docker compose build --parallel 1
+                                '''
+                                echo 'Docker images built successfully on retry'
+                            }
+                        }
                     }
                 }
             }
@@ -125,7 +144,7 @@ EOF
                 echo 'Stopping existing containers...'
                 dir('docker-compose') {
                     script {
-                        sh 'docker-compose down || true'
+                        sh 'docker compose down || true'
                         sh 'docker system prune -f || true'
                         echo 'Existing containers stopped and cleaned up'
                     }
@@ -138,7 +157,7 @@ EOF
                 echo 'Starting new containers...'
                 dir('docker-compose') {
                     script {
-                        sh 'docker-compose up -d'
+                        sh 'docker compose up -d'
                         echo 'All containers started'
                         
                         // Wait for containers to be ready
@@ -146,7 +165,7 @@ EOF
                         sh '''
                             timeout 180 bash -c '
                                 while true; do
-                                    if docker-compose ps | grep -q "unhealthy"; then
+                                    if docker compose ps | grep -q "unhealthy"; then
                                         echo "Some services are still starting, waiting..."
                                         sleep 10
                                     else
@@ -165,7 +184,7 @@ EOF
             steps {
                 echo 'Checking container status...'
                 dir('docker-compose') {
-                    sh 'docker-compose ps'
+                    sh 'docker compose ps'
                     sh 'docker ps --format "table {{.Names}}\\t{{.Status}}\\t{{.Ports}}"'
                 }
             }
@@ -217,11 +236,9 @@ EOF
         stage('Login to Docker Hub') {
             steps {
                 echo 'Logging into Docker Hub...'
-                withCredentials([string(credentialsId: 'dockerhubpwd', variable: 'DockerHubPassword')]) {
-                    script {
-                        sh "docker login -u ${DOCKER_HUB_REPO} -p ${DockerHubPassword}"
-                        echo 'Successfully logged into Docker Hub'
-                    }
+                script {
+                    sh 'echo $DOCKER_HUB_CREDENTIALS_PSW | docker login -u $DOCKER_HUB_CREDENTIALS_USR --password-stdin'
+                    echo 'Successfully logged into Docker Hub'
                 }
             }
         }
