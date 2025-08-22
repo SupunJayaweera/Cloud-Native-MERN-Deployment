@@ -259,7 +259,7 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "up{job=~\"user-service|hotel-service|room-service|booking-service|payment-service|notification-service\"}",
+          "expr": "label_replace((container_last_seen{name=~\"user-service|hotel-service|room-service|booking-service|payment-service|notification-service\"} > 0) * 1, \"service\", \"$1\", \"name\", \"(.*)\")",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -274,13 +274,15 @@
           "options": {
             "excludeByName": {
               "__name__": true,
-              "Time": true
+              "Time": true,
+              "job": true,
+              "instance": true
             },
             "indexByName": {},
             "renameByName": {
               "Value": "Status",
-              "instance": "Instance",
-              "job": "Service"
+              "name": "Instance",
+              "service": "Service"
             }
           }
         }
