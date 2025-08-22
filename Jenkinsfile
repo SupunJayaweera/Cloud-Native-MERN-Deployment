@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    triggers {
+        // Poll GitHub every 2 minutes for new commits
+        pollSCM('H/2 * * * *')
+    }
+
     environment {
         // Docker Hub credentials (configure in Jenkins credentials)
         DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
@@ -18,21 +23,22 @@ pipeline {
         HEALTH_CHECK_TIMEOUT = '300'
     }
     stages {
-        stage('SCM Checkout') {
+        stage('Checkout & Build Info') {
             steps {
-                retry(3) {
-                    checkout scmGit(
-                        branches: [[name: '*/main']], 
-                        extensions: [], 
-                        userRemoteConfigs: [[url: 'https://github.com/SupunJayaweera/Cloud-Native-MERN-Deployment.git']]
-                    )
-                }
                 script {
                     env.GIT_COMMIT_SHORT = sh(
                         script: 'git rev-parse --short HEAD',
                         returnStdout: true
                     ).trim()
-                    echo "Building commit: ${env.GIT_COMMIT_SHORT}"
+                    
+                    env.GIT_COMMIT_MSG = sh(
+                        script: 'git log -1 --pretty=%B',
+                        returnStdout: true
+                    ).trim()
+                    
+                    echo "🚀 Building commit: ${env.GIT_COMMIT_SHORT}"
+                    echo "📝 Commit message: ${env.GIT_COMMIT_MSG}"
+                    echo "⏰ Triggered by SCM polling at ${new Date()}"
                 }
             }
         }
