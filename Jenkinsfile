@@ -8,7 +8,7 @@ pipeline {
 
     options {
         // Add timeout for entire pipeline
-        timeout(time: 45, unit: 'MINUTES')
+        timeout(time: 120, unit: 'MINUTES')
         // Keep builds and artifacts
         buildDiscarder(logRotator(numToKeepStr: '10'))
         // Skip checkout for SCM polling
