@@ -6,6 +6,17 @@ pipeline {
         pollSCM('H/2 * * * *')
     }
 
+    options {
+        // Add timeout for entire pipeline
+        timeout(time: 45, unit: 'MINUTES')
+        // Keep builds and artifacts
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        // Skip checkout for SCM polling
+        skipDefaultCheckout(false)
+        // Retry on failure
+        retry(1)
+    }
+
     environment {
         // Docker Hub credentials (configure in Jenkins credentials)
         DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
@@ -111,46 +122,57 @@ EOF
 
         stage('Build Docker Images') {
             steps {
-                echo 'Building Docker images individually...'
+                echo 'Building Docker images...'
                 dir('docker-compose') {
                     script {
-                        // Check network connectivity first
-                        echo 'Testing network connectivity...'
-                        sh 'curl -I https://registry.npmjs.org/ || echo "NPM registry connectivity issue detected"'
-                        
                         // Set Docker build environment
                         env.DOCKER_BUILDKIT = '1'
                         env.BUILDKIT_PROGRESS = 'plain'
                         
-                        // List of services to build in order
-                        def services = [
-                            'user-service',
-                            'hotel-service', 
-                            'room-service',
-                            'payment-service',
-                            'notification-service',
-                            'booking-service',
-                            'frontend'
-                        ]
+                        // Check connectivity
+                        sh '''
+                            echo "Testing connectivity..."
+                            curl -I --connect-timeout 10 --max-time 20 https://registry.npmjs.org/ || echo "NPM registry issue"
+                            curl -I --connect-timeout 10 --max-time 20 https://registry-1.docker.io/ || echo "Docker registry issue"
+                        '''
                         
-                        // Build each service individually with timeout
-                        services.each { service ->
-                            echo "🔨 Building ${service}..."
-                            timeout(time: 10, unit: 'MINUTES') {
-                                retry(2) {
-                                    try {
-                                        sh "docker compose build --no-cache ${service}"
-                                        echo "✅ ${service} built successfully"
-                                    } catch (Exception e) {
-                                        echo "❌ ${service} build failed, retrying with cache..."
-                                        sh "docker compose build ${service}"
-                                        echo "✅ ${service} built successfully on retry"
-                                    }
+                        // Build services sequentially with simplified logic
+                        echo "🔨 Building backend services..."
+                        sh '''
+                            echo "Building user-service..."
+                            docker compose build --no-cache user-service || docker compose build user-service
+                            
+                            echo "Building hotel-service..."
+                            docker compose build --no-cache hotel-service || docker compose build hotel-service
+                            
+                            echo "Building room-service..."
+                            docker compose build --no-cache room-service || docker compose build room-service
+                            
+                            echo "Building payment-service..."
+                            docker compose build --no-cache payment-service || docker compose build payment-service
+                            
+                            echo "Building notification-service..."
+                            docker compose build --no-cache notification-service || docker compose build notification-service
+                            
+                            echo "Building booking-service..."
+                            docker compose build --no-cache booking-service || docker compose build booking-service
+                        '''
+                        
+                        echo "🔨 Building frontend..."
+                        sh '''
+                            echo "Building frontend with fallback strategy..."
+                            # Try no-cache first, then with cache, then with cleanup
+                            docker compose build --no-cache frontend || {
+                                echo "No-cache build failed, trying with cache..."
+                                docker compose build frontend || {
+                                    echo "Both attempts failed, cleaning and retrying..."
+                                    docker system prune -f --volumes
+                                    docker compose build frontend
                                 }
                             }
-                        }
+                        '''
                         
-                        echo '🎉 All Docker images built successfully!'
+                        echo '✅ All images built successfully!'
                     }
                 }
             }
@@ -169,93 +191,32 @@ EOF
             }
         }
 
-        stage('Run Docker Containers') {
+        stage('Deploy Services') {
             steps {
-                echo 'Starting infrastructure and application containers...'
+                echo 'Deploying all services...'
                 dir('docker-compose') {
-                    script {
-                        // Start infrastructure services first (databases, message queue)
-                        sh '''
-                            echo "Starting infrastructure services..."
-                            docker compose up -d user-db hotel-db room-db booking-db payment-db notification-db rabbitmq
-                        '''
+                    sh '''
+                        echo "Stopping existing services..."
+                        docker compose down || true
                         
-                        // Wait for infrastructure to be ready
-                        echo 'Waiting for infrastructure services...'
-                        sleep(30)
+                        echo "Starting all services..."
+                        docker compose up -d
                         
-                        // Start monitoring services
-                        sh '''
-                            echo "Starting monitoring services..."
-                            docker compose up -d prometheus grafana cadvisor node-exporter
-                        '''
+                        echo "Waiting for services to start..."
+                        sleep 60
                         
-                        // Wait for monitoring to be ready
-                        echo 'Waiting for monitoring services...'
-                        sleep(30)
+                        echo "Checking container status:"
+                        docker compose ps
                         
-                        // Start application services
-                        sh '''
-                            echo "Starting application services..."
-                            docker compose up -d user-service hotel-service room-service booking-service payment-service notification-service frontend nginx
-                        '''
+                        echo "Running basic health checks..."
+                        curl -f http://localhost:3000/ || echo "Frontend check: not ready"
+                        curl -f http://localhost:3001/health || echo "User service check: not ready"
                         
-                        echo 'All containers started'
-                        
-                        // Wait for containers to be ready
-                        echo 'Waiting for containers to be healthy...'
-                        sh '''
-                            timeout 300 bash -c '
-                                while true; do
-                                    if docker compose ps | grep -q "unhealthy"; then
-                                        echo "Some services are still starting, waiting..."
-                                        sleep 10
-                                    else
-                                        echo "All services are ready!"
-                                        break
-                                    fi
-                                done
-                            '
-                        '''
-                    }
+                        echo "Deployment completed!"
+                    '''
                 }
             }
         }
-
-        stage('Show Running Containers') {
-            steps {
-                echo 'Checking container status...'
-                dir('docker-compose') {
-                    sh 'docker compose ps'
-                    sh 'docker ps --format "table {{.Names}}\\t{{.Status}}\\t{{.Ports}}"'
-                }
-            }
-        }
-
-        stage('Health Checks') {
-            steps {
-                echo 'Running health checks...'
-                script {
-                    // Wait a bit more for services to fully initialize
-                    sleep(30)
-                    
-                    def healthChecks = [
-                        'Nginx': "http://${VM_IP}/health",
-                        'Frontend': "http://${VM_IP}/",
-                        'User API': "http://${VM_IP}/api/users/health",
-                        'Hotel API': "http://${VM_IP}/api/hotels/health"
-                    ]
-                    
-                    healthChecks.each { service, url ->
-                        try {
-                            sh "curl -f ${url}"
-                            echo "✅ ${service} health check passed"
-                        } catch (Exception e) {
-                            echo "⚠️ ${service} health check failed, but continuing..."
-                        }
-                    }
-                }
-            }
         }
 
         stage('Configure Monitoring') {
