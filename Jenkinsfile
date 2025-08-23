@@ -217,7 +217,6 @@ EOF
                 }
             }
         }
-        }
 
         stage('Configure Monitoring') {
             steps {
@@ -417,5 +416,4 @@ EOF
             echo "🌐 App might still be accessible at: http://${VM_IP}"
         }
     }
-}
 }
