@@ -47,9 +47,9 @@ pipeline {
                         returnStdout: true
                     ).trim()
                     
-                    echo "🚀 Building commit: ${env.GIT_COMMIT_SHORT}"
-                    echo "📝 Commit message: ${env.GIT_COMMIT_MSG}"
-                    echo "⏰ Triggered by SCM polling at ${new Date()}"
+                    echo "Building commit: ${env.GIT_COMMIT_SHORT}"
+                    echo "Commit message: ${env.GIT_COMMIT_MSG}"
+                    echo "Triggered by SCM polling at ${new Date()}"
                 }
             }
         }
@@ -62,45 +62,45 @@ pipeline {
                     sh '''
                         cd frontend/hotel-booking-frontend
                         cat > .env << EOF
-VITE_API_BASE_URL=""
-VITE_HOTEL_API_BASE_URL=""
-VITE_ROOM_API_BASE_URL=""
-VITE_BOOKING_API_BASE_URL=""
-EOF
+                        VITE_API_BASE_URL=""
+                        VITE_HOTEL_API_BASE_URL=""
+                        VITE_ROOM_API_BASE_URL=""
+                        VITE_BOOKING_API_BASE_URL=""
+                        EOF
                         echo "Frontend .env file created"
                     '''
 
                     // Create .env.docker files for services if they don't exist
                     def services = [
-                        'user-service': '''NODE_ENV=production
-PORT=3001
-MONGODB_URI=mongodb://admin:password123@user-db:27017/userdb?authSource=admin
-JWT_SECRET=your-super-secret-jwt-key-for-hotel-booking-system-2024
-RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672''',
-                        'hotel-service': '''NODE_ENV=production
-PORT=3002
-MONGODB_URI=mongodb://admin:password123@hotel-db:27017/hoteldb?authSource=admin
-RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672''',
-                        'room-service': '''NODE_ENV=production
-PORT=3003
-MONGODB_URI=mongodb://admin:password123@room-db:27017/roomdb?authSource=admin
-RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672''',
-                        'booking-service': '''NODE_ENV=production
-PORT=3004
-MONGODB_URI=mongodb://admin:password123@booking-db:27017/bookingdb?authSource=admin
-RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672
-USER_SERVICE_URL=http://user-service:3001
-ROOM_SERVICE_URL=http://room-service:3003
-PAYMENT_SERVICE_URL=http://payment-service:3005
-NOTIFICATION_SERVICE_URL=http://notification-service:3006''',
-                        'payment-service': '''NODE_ENV=production
-PORT=3005
-MONGODB_URI=mongodb://admin:password123@payment-db:27017/paymentdb?authSource=admin
-RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672''',
-                        'notification-service': '''NODE_ENV=production
-PORT=3006
-MONGODB_URI=mongodb://admin:password123@notification-db:27017/notificationdb?authSource=admin
-RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672'''
+                                                'user-service': '''NODE_ENV=production
+                        PORT=3001
+                        MONGODB_URI=mongodb://admin:password123@user-db:27017/userdb?authSource=admin
+                        JWT_SECRET=994d65b75c26650db4d2a04f5a85c4d8e62b40705dc45d0d0ede7a9157079258
+                        RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672''',
+                                                'hotel-service': '''NODE_ENV=production
+                        PORT=3002
+                        MONGODB_URI=mongodb://admin:password123@hotel-db:27017/hoteldb?authSource=admin
+                        RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672''',
+                                                'room-service': '''NODE_ENV=production
+                        PORT=3003
+                        MONGODB_URI=mongodb://admin:password123@room-db:27017/roomdb?authSource=admin
+                        RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672''',
+                                                'booking-service': '''NODE_ENV=production
+                        PORT=3004
+                        MONGODB_URI=mongodb://admin:password123@booking-db:27017/bookingdb?authSource=admin
+                        RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672
+                        USER_SERVICE_URL=http://user-service:3001
+                        ROOM_SERVICE_URL=http://room-service:3003
+                        PAYMENT_SERVICE_URL=http://payment-service:3005
+                        NOTIFICATION_SERVICE_URL=http://notification-service:3006''',
+                                                'payment-service': '''NODE_ENV=production
+                        PORT=3005
+                        MONGODB_URI=mongodb://admin:password123@payment-db:27017/paymentdb?authSource=admin
+                        RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672''',
+                                                'notification-service': '''NODE_ENV=production
+                        PORT=3006
+                        MONGODB_URI=mongodb://admin:password123@notification-db:27017/notificationdb?authSource=admin
+                        RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672'''
                     ]
 
                     services.each { serviceName, envContent ->
@@ -108,8 +108,8 @@ RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672'''
                             if [ ! -f services/${serviceName}/.env.docker ]; then
                                 echo "Creating .env.docker for ${serviceName}..."
                                 cat > services/${serviceName}/.env.docker << 'EOF'
-${envContent}
-EOF
+                                ${envContent}
+                                EOF
                                 echo "Created .env.docker for ${serviceName}"
                             else
                                 echo ".env.docker already exists for ${serviceName}"
@@ -137,7 +137,7 @@ EOF
                         '''
                         
                         // Build services sequentially with simplified logic
-                        echo "🔨 Building backend services..."
+                        echo "Building backend services..."
                         sh '''
                             echo "Building user-service..."
                             docker compose build --no-cache user-service || docker compose build user-service
@@ -158,7 +158,7 @@ EOF
                             docker compose build --no-cache booking-service || docker compose build booking-service
                         '''
                         
-                        echo "🔨 Building frontend..."
+                        echo "Building frontend..."
                         sh '''
                             echo "Building frontend with fallback strategy..."
                             # Try no-cache first, then with cache, then with cleanup
@@ -172,7 +172,7 @@ EOF
                             }
                         '''
                         
-                        echo '✅ All images built successfully!'
+                        echo 'All images built successfully!'
                     }
                 }
             }
@@ -236,15 +236,15 @@ EOF
                     monitoringChecks.each { service, url ->
                         try {
                             sh "curl -f ${url}"
-                            echo "✅ ${service} monitoring service is ready"
+                            echo "${service} monitoring service is ready"
                         } catch (Exception e) {
-                            echo "⚠️ ${service} monitoring service not ready: ${e.getMessage()}"
+                            echo "${service} monitoring service not ready: ${e.getMessage()}"
                         }
                     }
                     
                     // Configure Grafana data source and dashboards
                     try {
-                        echo "🔧 Configuring Grafana dashboards..."
+                        echo "Configuring Grafana dashboards..."
                         
                         // Wait a bit more for Grafana to fully initialize
                         sleep(30)
@@ -256,9 +256,9 @@ EOF
                               -d @monitoring/grafana/dashboards/containers-dashboard.json || echo "Dashboard import attempted"
                         """
                         
-                        echo "✅ Monitoring configuration completed"
+                        echo "Monitoring configuration completed"
                     } catch (Exception e) {
-                        echo "⚠️ Monitoring configuration had issues: ${e.getMessage()}"
+                        echo "Monitoring configuration had issues: ${e.getMessage()}"
                     }
                 }
             }
@@ -272,9 +272,9 @@ EOF
                         try {
                             sh 'npm install mongoose'
                             sh 'node init-docker-test-data.js'
-                            echo '✅ Test data initialized successfully'
+                            echo 'Test data initialized successfully'
                         } catch (Exception e) {
-                            echo "⚠️ Test data initialization had issues, but continuing..."
+                            echo "Test data initialization had issues, but continuing..."
                         }
                     }
                 }
@@ -298,7 +298,7 @@ EOF
                     def services = ['frontend', 'user-service', 'hotel-service', 'room-service', 'booking-service', 'payment-service', 'notification-service']
                     
                     services.each { service ->
-                        echo "🏷️ Tagging and pushing ${service}..."
+                        echo "Tagging and pushing ${service}..."
                         
                         // Tag images first
                         sh """
@@ -317,10 +317,10 @@ EOF
                                         echo 'Pushing ${service}:${BUILD_NUMBER} to Docker Hub...'
                                         docker push ${DOCKER_HUB_REPO}/hotel-booking-${service}:${BUILD_NUMBER}
                                         
-                                        echo '✅ ${service} pushed successfully'
+                                        echo '${service} pushed successfully'
                                     """
                                 } catch (Exception e) {
-                                    echo "❌ Push failed for ${service}, retrying... Error: ${e.getMessage()}"
+                                    echo "Push failed for ${service}, retrying... Error: ${e.getMessage()}"
                                     // Wait a bit before retry
                                     sleep(30)
                                     throw e
@@ -351,32 +351,32 @@ EOF
                                 "role": "admin"
                               }'
                         """
-                        echo '✅ User registration test passed'
+                        echo 'User registration test passed'
                     } catch (Exception e) {
-                        echo "⚠️ User registration test failed: ${e.getMessage()}"
+                        echo "User registration test failed: ${e.getMessage()}"
                     }
 
                     // Test hotel listing
                     try {
                         sh "curl -f http://${VM_IP}/api/hotels/"
-                        echo '✅ Hotel listing test passed'
+                        echo 'Hotel listing test passed'
                     } catch (Exception e) {
-                        echo "⚠️ Hotel listing test failed: ${e.getMessage()}"
+                        echo "Hotel listing test failed: ${e.getMessage()}"
                     }
 
-                    echo "🎉 Deployment completed successfully!"
+                    echo "Deployment completed successfully!"
                     echo ""
-                    echo "📱 Application URLs:"
-                    echo "   🌐 Hotel Booking App: http://${VM_IP}"
-                    echo "   🔐 Admin Panel: http://${VM_IP}/admin"
+                    echo "Application URLs:"
+                    echo "   Hotel Booking App: http://${VM_IP}"
+                    echo "   Admin Panel: http://${VM_IP}/admin"
                     echo ""
-                    echo "📊 Monitoring URLs:"
-                    echo "   📈 Grafana Dashboard: http://${VM_IP}:3007 (admin/admin)"
-                    echo "   🔍 Prometheus: http://${VM_IP}:9090"
-                    echo "   📊 Container Metrics: http://${VM_IP}:8081"
-                    echo "   🖥️ System Metrics: http://${VM_IP}:9100"
+                    echo "Monitoring URLs:"
+                    echo "   Grafana Dashboard: http://${VM_IP}:3007 (admin/admin)"
+                    echo "   Prometheus: http://${VM_IP}:9090"
+                    echo "   Container Metrics: http://${VM_IP}:8081"
+                    echo "   System Metrics: http://${VM_IP}:9100"
                     echo ""
-                    echo "🚀 Your Cloud-Native MERN Hotel Booking System with monitoring is ready!"
+                    echo "Your Cloud-Native MERN Hotel Booking System with monitoring is ready!"
                 }
             }
         }
@@ -401,19 +401,19 @@ EOF
         }
         
         success {
-            echo '🎉 Pipeline succeeded!'
-            echo "✅ Deployment completed successfully!"
-            echo "🌐 Access your app at: http://${VM_IP}"
+            echo 'Pipeline succeeded!'
+            echo "Deployment completed successfully!"
+            echo "Access your app at: http://${VM_IP}"
         }
         
         failure {
-            echo '❌ Pipeline failed!'
-            echo "🔍 Check the console output for details"
+            echo 'Pipeline failed!'
+            echo "Check the console output for details"
         }
         
         unstable {
-            echo '⚠️ Pipeline completed with warnings!'
-            echo "🌐 App might still be accessible at: http://${VM_IP}"
+            echo 'Pipeline completed with warnings!'
+            echo "App might still be accessible at: http://${VM_IP}"
         }
     }
 }
