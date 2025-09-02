@@ -61,58 +61,58 @@ pipeline {
                     // Create frontend .env file
                     sh '''
                         cd frontend/hotel-booking-frontend
-                        cat > .env << EOF
-                        VITE_API_BASE_URL=""
-                        VITE_HOTEL_API_BASE_URL=""
-                        VITE_ROOM_API_BASE_URL=""
-                        VITE_BOOKING_API_BASE_URL=""
-                        EOF
+                        cat > .env << 'EOF'
+VITE_API_BASE_URL=""
+VITE_HOTEL_API_BASE_URL=""
+VITE_ROOM_API_BASE_URL=""
+VITE_BOOKING_API_BASE_URL=""
+EOF
                         echo "Frontend .env file created"
                     '''
 
-                    // Create .env.docker files for services if they don't exist
+                    // Create .env files for services if they don't exist
                     def services = [
-                                                'user-service': '''NODE_ENV=production
-                        PORT=3001
-                        MONGODB_URI=mongodb://admin:password123@user-db:27017/userdb?authSource=admin
-                        JWT_SECRET=994d65b75c26650db4d2a04f5a85c4d8e62b40705dc45d0d0ede7a9157079258
-                        RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672''',
-                                                'hotel-service': '''NODE_ENV=production
-                        PORT=3002
-                        MONGODB_URI=mongodb://admin:password123@hotel-db:27017/hoteldb?authSource=admin
-                        RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672''',
-                                                'room-service': '''NODE_ENV=production
-                        PORT=3003
-                        MONGODB_URI=mongodb://admin:password123@room-db:27017/roomdb?authSource=admin
-                        RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672''',
-                                                'booking-service': '''NODE_ENV=production
-                        PORT=3004
-                        MONGODB_URI=mongodb://admin:password123@booking-db:27017/bookingdb?authSource=admin
-                        RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672
-                        USER_SERVICE_URL=http://user-service:3001
-                        ROOM_SERVICE_URL=http://room-service:3003
-                        PAYMENT_SERVICE_URL=http://payment-service:3005
-                        NOTIFICATION_SERVICE_URL=http://notification-service:3006''',
-                                                'payment-service': '''NODE_ENV=production
-                        PORT=3005
-                        MONGODB_URI=mongodb://admin:password123@payment-db:27017/paymentdb?authSource=admin
-                        RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672''',
-                                                'notification-service': '''NODE_ENV=production
-                        PORT=3006
-                        MONGODB_URI=mongodb://admin:password123@notification-db:27017/notificationdb?authSource=admin
-                        RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672'''
+                        'user-service': '''NODE_ENV=production
+PORT=3001
+MONGODB_URI=mongodb://admin:password123@user-db:27017/userdb?authSource=admin
+JWT_SECRET=994d65b75c26650db4d2a04f5a85c4d8e62b40705dc45d0d0ede7a9157079258
+RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672''',
+                        'hotel-service': '''NODE_ENV=production
+PORT=3002
+MONGODB_URI=mongodb://admin:password123@hotel-db:27017/hoteldb?authSource=admin
+RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672''',
+                        'room-service': '''NODE_ENV=production
+PORT=3003
+MONGODB_URI=mongodb://admin:password123@room-db:27017/roomdb?authSource=admin
+RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672''',
+                        'booking-service': '''NODE_ENV=production
+PORT=3004
+MONGODB_URI=mongodb://admin:password123@booking-db:27017/bookingdb?authSource=admin
+RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672
+USER_SERVICE_URL=http://user-service:3001
+ROOM_SERVICE_URL=http://room-service:3003
+PAYMENT_SERVICE_URL=http://payment-service:3005
+NOTIFICATION_SERVICE_URL=http://notification-service:3006''',
+                        'payment-service': '''NODE_ENV=production
+PORT=3005
+MONGODB_URI=mongodb://admin:password123@payment-db:27017/paymentdb?authSource=admin
+RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672''',
+                        'notification-service': '''NODE_ENV=production
+PORT=3006
+MONGODB_URI=mongodb://admin:password123@notification-db:27017/notificationdb?authSource=admin
+RABBITMQ_URL=amqp://admin:password123@rabbitmq:5672'''
                     ]
 
                     services.each { serviceName, envContent ->
                         sh """
-                            if [ ! -f services/${serviceName}/.env.docker ]; then
-                                echo "Creating .env.docker for ${serviceName}..."
-                                cat > services/${serviceName}/.env.docker << 'EOF'
-                                ${envContent}
-                                EOF
-                                echo "Created .env.docker for ${serviceName}"
+                            if [ ! -f services/${serviceName}/.env ]; then
+                                echo "Creating .env for ${serviceName}..."
+                                cat > services/${serviceName}/.env << 'EOF'
+${envContent}
+EOF
+                                echo "Created .env for ${serviceName}"
                             else
-                                echo ".env.docker already exists for ${serviceName}"
+                                echo ".env already exists for ${serviceName}"
                             fi
                         """
                     }
