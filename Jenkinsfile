@@ -270,11 +270,241 @@ EOF
                 dir('docker-compose') {
                     script {
                         try {
-                            sh 'npm install mongoose'
-                            sh 'node init-docker-test-data.js'
-                            echo 'Test data initialized successfully'
+                            // Wait for services to be ready
+                            sh '''
+                                echo "Waiting for services to be ready..."
+                                sleep 30
+                                
+                                # Check if services are responding
+                                for i in {1..10}; do
+                                    if curl -f http://localhost:3001/health && curl -f http://localhost:3002/health; then
+                                        echo "Services are ready!"
+                                        break
+                                    fi
+                                    echo "Waiting for services... attempt $i"
+                                    sleep 10
+                                done
+                            '''
+                            
+                            // Install axios for API calls
+                            sh 'npm install axios'
+                            
+                            // Create test data using API endpoints
+                            sh '''
+                                cat > create-sample-data.js << 'EOF'
+const axios = require("axios");
+
+// Service URLs
+const USER_SERVICE_URL = "http://localhost:3001";
+const HOTEL_SERVICE_URL = "http://localhost:3002";
+const ROOM_SERVICE_URL = "http://localhost:3003";
+
+// Sample users
+const sampleUsers = [
+  {
+    username: "john_doe",
+    email: "john@example.com",
+    password: "password123",
+    firstName: "John",
+    lastName: "Doe",
+    phone: "+1234567890",
+    role: "guest"
+  },
+  {
+    username: "jane_smith",
+    email: "jane@example.com",
+    password: "password123",
+    firstName: "Jane",
+    lastName: "Smith",
+    phone: "+1234567891",
+    role: "guest"
+  },
+  {
+    username: "admin_user",
+    email: "admin@hotel.com",
+    password: "admin123",
+    firstName: "Admin",
+    lastName: "User",
+    phone: "+1234567892",
+    role: "admin"
+  }
+];
+
+// Sample hotels
+const sampleHotels = [
+  {
+    name: "Grand Plaza Hotel",
+    description: "A luxurious 5-star hotel in the heart of the city with world-class amenities.",
+    address: {
+      street: "123 Main Street",
+      city: "New York",
+      state: "NY",
+      country: "USA",
+      zipCode: "10001"
+    },
+    contact: {
+      phone: "+1-555-0123",
+      email: "info@grandplaza.com"
+    },
+    amenities: ["WiFi", "Pool", "Gym", "Spa", "Restaurant", "Room Service"],
+    images: ["/grand-plaza.jpg"],
+    totalRooms: 50,
+    rating: 4.8
+  },
+  {
+    name: "Ocean View Resort",
+    description: "Beautiful beachfront resort with stunning ocean views.",
+    address: {
+      street: "456 Beach Boulevard",
+      city: "Miami",
+      state: "FL",
+      country: "USA",
+      zipCode: "33101"
+    },
+    contact: {
+      phone: "+1-555-0456",
+      email: "reservations@oceanview.com"
+    },
+    amenities: ["WiFi", "Beach Access", "Pool", "Bar", "Restaurant"],
+    images: ["/ocean-view.jpg"],
+    totalRooms: 75,
+    rating: 4.6
+  }
+];
+
+// Sample rooms for each hotel
+const sampleRooms = [
+  // Grand Plaza Hotel rooms
+  {
+    roomNumber: "101",
+    type: "single",
+    capacity: 1,
+    pricePerNight: 150,
+    description: "Comfortable single room with city view",
+    amenities: ["WiFi", "TV", "Air Conditioning", "Mini Bar"]
+  },
+  {
+    roomNumber: "102",
+    type: "double",
+    capacity: 2,
+    pricePerNight: 200,
+    description: "Spacious double room with king-size bed",
+    amenities: ["WiFi", "TV", "Air Conditioning", "Mini Bar", "Balcony"]
+  },
+  {
+    roomNumber: "201",
+    type: "suite",
+    capacity: 4,
+    pricePerNight: 350,
+    description: "Luxury suite with separate living area",
+    amenities: ["WiFi", "TV", "Air Conditioning", "Mini Bar", "Balcony", "Jacuzzi"]
+  }
+];
+
+async function createUser(userData) {
+  try {
+    console.log(`Creating user: ${userData.email}`);
+    const response = await axios.post(`${USER_SERVICE_URL}/api/users/register`, userData, {
+      headers: { "Content-Type": "application/json" },
+      timeout: 10000
+    });
+    console.log(`✓ Created user: ${userData.email}`);
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 400 && error.response?.data?.message?.includes("duplicate")) {
+      console.log(`⚠ User ${userData.email} already exists, skipping...`);
+      return null;
+    }
+    console.log(`✗ Failed to create user ${userData.email}:`, error.response?.data?.message || error.message);
+    return null;
+  }
+}
+
+async function createHotel(hotelData) {
+  try {
+    console.log(`Creating hotel: ${hotelData.name}`);
+    const response = await axios.post(`${HOTEL_SERVICE_URL}/api/hotels`, hotelData, {
+      headers: { "Content-Type": "application/json" },
+      timeout: 10000
+    });
+    console.log(`✓ Created hotel: ${hotelData.name}`);
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 400 && error.response?.data?.message?.includes("duplicate")) {
+      console.log(`⚠ Hotel "${hotelData.name}" already exists, skipping...`);
+      return null;
+    }
+    console.log(`✗ Failed to create hotel ${hotelData.name}:`, error.response?.data?.message || error.message);
+    return null;
+  }
+}
+
+async function createRoom(roomData, hotelId) {
+  try {
+    console.log(`Creating room: ${roomData.roomNumber} for hotel ${hotelId}`);
+    const response = await axios.post(`${ROOM_SERVICE_URL}/api/hotels/${hotelId}/rooms`, roomData, {
+      headers: { "Content-Type": "application/json" },
+      timeout: 10000
+    });
+    console.log(`✓ Created room: ${roomData.roomNumber}`);
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 400 && error.response?.data?.message?.includes("duplicate")) {
+      console.log(`⚠ Room "${roomData.roomNumber}" already exists, skipping...`);
+      return null;
+    }
+    console.log(`✗ Failed to create room ${roomData.roomNumber}:`, error.response?.data?.message || error.message);
+    return null;
+  }
+}
+
+async function createSampleData() {
+  console.log("🚀 Creating sample data...");
+
+  // Create users
+  console.log("\\n👥 Creating sample users...");
+  for (const user of sampleUsers) {
+    await createUser(user);
+  }
+
+  // Create hotels
+  console.log("\\n🏨 Creating sample hotels...");
+  const createdHotels = [];
+  for (const hotel of sampleHotels) {
+    const result = await createHotel(hotel);
+    if (result) {
+      createdHotels.push(result);
+    }
+  }
+
+  // Create rooms for the first hotel
+  if (createdHotels.length > 0) {
+    console.log("\\n🛏️ Creating sample rooms...");
+    const firstHotel = createdHotels[0];
+    const hotelId = firstHotel.hotel?._id || firstHotel._id || firstHotel.id;
+    
+    for (const room of sampleRooms) {
+      await createRoom(room, hotelId);
+    }
+  }
+
+  console.log("\\n✅ Sample data creation completed!");
+  console.log("\\nSample login credentials:");
+  console.log("- Regular User: john@example.com / password123");
+  console.log("- Regular User: jane@example.com / password123");
+  console.log("- Admin User: admin@hotel.com / admin123");
+}
+
+createSampleData().catch(console.error);
+EOF
+                            '''
+                            
+                            // Run the sample data creation
+                            sh 'node create-sample-data.js'
+                            echo 'Sample data initialized successfully'
                         } catch (Exception e) {
-                            echo "Test data initialization had issues, but continuing..."
+                            echo "Sample data initialization had issues: ${e.getMessage()}"
+                            echo "Continuing with deployment..."
                         }
                     }
                 }
