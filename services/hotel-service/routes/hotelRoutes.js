@@ -50,7 +50,11 @@ router.get("/api/hotels/:hotelId", async (req, res) => {
       return res.status(404).json({ error: "Hotel not found" });
     }
 
-    res.json({ hotel });
+    // Add id field for frontend compatibility
+    const hotelWithId = hotel.toObject();
+    hotelWithId.id = hotelWithId._id;
+
+    res.json({ hotel: hotelWithId });
   } catch (error) {
     console.error("Hotel fetch error:", error);
     res.status(500).json({ error: "Internal server error" });

@@ -1,9 +1,10 @@
 import axios from "axios";
 
 const API_BASE_URL =
-  import.meta.env.VITE_BOOKING_API_BASE_URL !== undefined
-    ? import.meta.env.VITE_BOOKING_API_BASE_URL
-    : "http://localhost:3004";
+  import.meta.env.VITE_BOOKING_API_BASE_URL &&
+  import.meta.env.VITE_BOOKING_API_BASE_URL.trim()
+    ? import.meta.env.VITE_BOOKING_API_BASE_URL.trim()
+    : "";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
