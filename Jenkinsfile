@@ -441,11 +441,14 @@ async function createHotel(hotelData) {
   }
 }
 
-async function createRoom(roomData, hotelId) {
+async function createRoom(roomData, hotelId, adminToken) {
   try {
     console.log(`Creating room: ${roomData.roomNumber} for hotel ${hotelId}`);
     const response = await axios.post(`${ROOM_SERVICE_URL}/api/hotels/${hotelId}/rooms`, roomData, {
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${adminToken}`
+      },
       timeout: 10000
     });
     console.log(`✓ Created room: ${roomData.roomNumber}`);
@@ -456,6 +459,24 @@ async function createRoom(roomData, hotelId) {
       return null;
     }
     console.log(`✗ Failed to create room ${roomData.roomNumber}:`, error.response?.data?.message || error.message);
+    return null;
+  }
+}
+
+async function loginAdmin() {
+  try {
+    console.log("🔐 Logging in as admin...");
+    const response = await axios.post(`${USER_SERVICE_URL}/api/users/login`, {
+      email: "admin@hotel.com",
+      password: "admin123"
+    }, {
+      headers: { "Content-Type": "application/json" },
+      timeout: 10000
+    });
+    console.log("✓ Admin login successful");
+    return response.data.token;
+  } catch (error) {
+    console.log("✗ Admin login failed:", error.response?.data?.message || error.message);
     return null;
   }
 }
@@ -479,14 +500,22 @@ async function createSampleData() {
     }
   }
 
+  // Login as admin for room creation
+  console.log("\\n🔐 Logging in as admin for room creation...");
+  const adminToken = await loginAdmin();
+  if (!adminToken) {
+    console.log("❌ Failed to get admin token, skipping room creation");
+    return;
+  }
+
   // Create rooms for the first hotel
   if (createdHotels.length > 0) {
-    console.log("\\n🛏️ Creating sample rooms...");
+    console.log("\\n🛏️ Creating sample rooms with admin authentication...");
     const firstHotel = createdHotels[0];
     const hotelId = firstHotel.hotel?._id || firstHotel._id || firstHotel.id;
     
     for (const room of sampleRooms) {
-      await createRoom(room, hotelId);
+      await createRoom(room, hotelId, adminToken);
     }
   }
 
