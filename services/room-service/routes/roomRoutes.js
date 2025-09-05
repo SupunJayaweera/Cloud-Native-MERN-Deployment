@@ -419,15 +419,15 @@ router.post("/init/hotels/:hotelId/rooms", async (req, res) => {
       amenities,
       images,
       status = "available",
-      isActive = true
+      isActive = true,
     } = req.body;
 
     // Check if room already exists
     const existingRoom = await Room.findOne({ hotelId, roomNumber });
     if (existingRoom) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: "Room already exists",
-        message: `Room ${roomNumber} already exists for this hotel`
+        message: `Room ${roomNumber} already exists for this hotel`,
       });
     }
 
@@ -441,7 +441,7 @@ router.post("/init/hotels/:hotelId/rooms", async (req, res) => {
       amenities: amenities || [],
       images: images || [],
       status,
-      isActive
+      isActive,
     });
 
     await room.save();
@@ -462,7 +462,9 @@ router.post("/init/hotels/:hotelId/rooms", async (req, res) => {
   } catch (error) {
     console.error("Room creation error:", error);
     if (error.code === 11000) {
-      res.status(400).json({ error: "Room with this number already exists for this hotel" });
+      res
+        .status(400)
+        .json({ error: "Room with this number already exists for this hotel" });
     } else {
       res.status(500).json({ error: "Internal server error" });
     }

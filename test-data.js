@@ -123,7 +123,7 @@ const testRooms = [
     description: "Comfortable single room with city view",
     amenities: ["WiFi", "TV", "Air Conditioning", "Mini Bar"],
     status: "available",
-    isActive: true
+    isActive: true,
   },
   {
     roomNumber: "102",
@@ -133,7 +133,7 @@ const testRooms = [
     description: "Spacious double room with king-size bed",
     amenities: ["WiFi", "TV", "Air Conditioning", "Mini Bar", "Balcony"],
     status: "available",
-    isActive: true
+    isActive: true,
   },
   {
     roomNumber: "201",
@@ -150,7 +150,7 @@ const testRooms = [
       "Jacuzzi",
     ],
     status: "available",
-    isActive: true
+    isActive: true,
   },
   // Ocean View Resort rooms
   {
@@ -161,7 +161,7 @@ const testRooms = [
     description: "Ocean view room with private balcony",
     amenities: ["WiFi", "TV", "Air Conditioning", "Ocean View", "Balcony"],
     status: "available",
-    isActive: true
+    isActive: true,
   },
   {
     roomNumber: "302",
@@ -171,7 +171,7 @@ const testRooms = [
     description: "Family room with bunk beds and ocean view",
     amenities: ["WiFi", "TV", "Air Conditioning", "Ocean View", "Kitchenette"],
     status: "available",
-    isActive: true
+    isActive: true,
   },
   // Mountain Lodge rooms
   {
@@ -182,7 +182,7 @@ const testRooms = [
     description: "Cozy single room with mountain view",
     amenities: ["WiFi", "TV", "Heating", "Mountain View"],
     status: "available",
-    isActive: true
+    isActive: true,
   },
   {
     roomNumber: "402",
@@ -192,7 +192,7 @@ const testRooms = [
     description: "Deluxe room with fireplace and mountain view",
     amenities: ["WiFi", "TV", "Heating", "Mountain View", "Fireplace"],
     status: "available",
-    isActive: true
+    isActive: true,
   },
 ];
 
