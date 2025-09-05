@@ -65,6 +65,7 @@ async function initializeDockerTestData() {
       rating: Number,
       amenities: [String],
       images: [String],
+      isActive: { type: Boolean, default: true },
     });
 
     const roomSchema = new mongoose.Schema({
@@ -72,10 +73,11 @@ async function initializeDockerTestData() {
       roomNumber: String,
       type: String,
       capacity: Number,
-      price: Number,
+      pricePerNight: Number,
       amenities: [String],
       images: [String],
-      isAvailable: { type: Boolean, default: true },
+      status: { type: String, default: "available" },
+      isActive: { type: Boolean, default: true },
     });
 
     // Create models
@@ -131,6 +133,7 @@ async function initializeDockerTestData() {
           "Valet Parking",
         ],
         images: ["/grand-plaza.jpg"],
+        isActive: true,
       },
       {
         name: "Ocean View Resort",
@@ -150,6 +153,7 @@ async function initializeDockerTestData() {
           "Restaurant",
         ],
         images: ["/ocean-view.jpg"],
+        isActive: true,
       },
       {
         name: "Mountain Lodge",
@@ -168,6 +172,7 @@ async function initializeDockerTestData() {
           "Ski Storage",
         ],
         images: ["/mountain-lodge.jpg"],
+        isActive: true,
       },
     ]);
 
@@ -224,14 +229,15 @@ async function initializeDockerTestData() {
           }
 
           rooms.push({
-            hotelId: hotel._id.toString(),
+            hotelId: hotel._id,
             roomNumber,
             type: roomType,
             capacity,
-            price,
+            pricePerNight: price,
             amenities,
             images: [`/room-${roomType.toLowerCase()}.jpg`],
-            isAvailable: true,
+            status: "available",
+            isActive: true,
           });
         }
       }

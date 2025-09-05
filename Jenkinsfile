@@ -349,7 +349,8 @@ const sampleHotels = [
     amenities: ["WiFi", "Pool", "Gym", "Spa", "Restaurant", "Room Service"],
     images: ["/grand-plaza.jpg"],
     totalRooms: 50,
-    rating: 4.8
+    rating: 4.8,
+    isActive: true
   },
   {
     name: "Ocean View Resort",
@@ -368,7 +369,8 @@ const sampleHotels = [
     amenities: ["WiFi", "Beach Access", "Pool", "Bar", "Restaurant"],
     images: ["/ocean-view.jpg"],
     totalRooms: 75,
-    rating: 4.6
+    rating: 4.6,
+    isActive: true
   }
 ];
 

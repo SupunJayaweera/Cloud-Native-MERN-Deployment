@@ -54,6 +54,7 @@ const testHotels = [
     images: ["/grand-plaza.jpg"],
     totalRooms: 50,
     rating: 4.8,
+    isActive: true,
   },
   {
     name: "Ocean View Resort",
@@ -81,6 +82,7 @@ const testHotels = [
     images: ["/ocen-view.jpg"],
     totalRooms: 75,
     rating: 4.6,
+    isActive: true,
   },
   {
     name: "Mountain Lodge",
@@ -107,6 +109,7 @@ const testHotels = [
     images: ["/mountain-lodge.jpg"],
     totalRooms: 30,
     rating: 4.4,
+    isActive: true,
   },
 ];
 
