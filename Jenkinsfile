@@ -62,12 +62,12 @@ pipeline {
                     sh '''
                         cd frontend/hotel-booking-frontend
                         cat > .env << 'EOF'
-VITE_API_BASE_URL=""
-VITE_HOTEL_API_BASE_URL=""
-VITE_ROOM_API_BASE_URL=""
-VITE_BOOKING_API_BASE_URL=""
+VITE_API_BASE_URL="http://192.168.46.139:3001"
+VITE_HOTEL_API_BASE_URL="http://192.168.46.139:3002"
+VITE_ROOM_API_BASE_URL="http://192.168.46.139:3003"
+VITE_BOOKING_API_BASE_URL="http://192.168.46.139:3004"
 EOF
-                        echo "Frontend .env file created"
+                        echo "Frontend .env file created with VM IP addresses"
                     '''
 
                     // Create .env files for services if they don't exist
