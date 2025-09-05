@@ -406,4 +406,67 @@ router.get("/rooms/:roomId/availability", async (req, res) => {
   }
 });
 
+// Special initialization endpoint (no auth required) - for initial data setup only
+router.post("/init/hotels/:hotelId/rooms", async (req, res) => {
+  try {
+    const { hotelId } = req.params;
+    const {
+      roomNumber,
+      type,
+      capacity,
+      pricePerNight,
+      description,
+      amenities,
+      images,
+      status = "available",
+      isActive = true
+    } = req.body;
+
+    // Check if room already exists
+    const existingRoom = await Room.findOne({ hotelId, roomNumber });
+    if (existingRoom) {
+      return res.status(400).json({ 
+        error: "Room already exists",
+        message: `Room ${roomNumber} already exists for this hotel`
+      });
+    }
+
+    const room = new Room({
+      hotelId,
+      roomNumber,
+      type,
+      capacity,
+      pricePerNight,
+      description,
+      amenities: amenities || [],
+      images: images || [],
+      status,
+      isActive
+    });
+
+    await room.save();
+
+    // Publish event
+    await publishEvent("room_created", {
+      roomId: room._id,
+      hotelId,
+      roomNumber,
+      type,
+      pricePerNight,
+    });
+
+    res.status(201).json({
+      message: "Room created successfully",
+      room,
+    });
+  } catch (error) {
+    console.error("Room creation error:", error);
+    if (error.code === 11000) {
+      res.status(400).json({ error: "Room with this number already exists for this hotel" });
+    } else {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+});
+
 module.exports = router;

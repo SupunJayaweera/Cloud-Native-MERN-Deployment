@@ -122,6 +122,8 @@ const testRooms = [
     pricePerNight: 150,
     description: "Comfortable single room with city view",
     amenities: ["WiFi", "TV", "Air Conditioning", "Mini Bar"],
+    status: "available",
+    isActive: true
   },
   {
     roomNumber: "102",
@@ -130,6 +132,8 @@ const testRooms = [
     pricePerNight: 200,
     description: "Spacious double room with king-size bed",
     amenities: ["WiFi", "TV", "Air Conditioning", "Mini Bar", "Balcony"],
+    status: "available",
+    isActive: true
   },
   {
     roomNumber: "201",
@@ -145,6 +149,8 @@ const testRooms = [
       "Balcony",
       "Jacuzzi",
     ],
+    status: "available",
+    isActive: true
   },
   // Ocean View Resort rooms
   {
@@ -154,6 +160,8 @@ const testRooms = [
     pricePerNight: 180,
     description: "Ocean view room with private balcony",
     amenities: ["WiFi", "TV", "Air Conditioning", "Ocean View", "Balcony"],
+    status: "available",
+    isActive: true
   },
   {
     roomNumber: "302",
@@ -162,6 +170,8 @@ const testRooms = [
     pricePerNight: 280,
     description: "Family room with bunk beds and ocean view",
     amenities: ["WiFi", "TV", "Air Conditioning", "Ocean View", "Kitchenette"],
+    status: "available",
+    isActive: true
   },
   // Mountain Lodge rooms
   {
@@ -171,6 +181,8 @@ const testRooms = [
     pricePerNight: 120,
     description: "Cozy single room with mountain view",
     amenities: ["WiFi", "TV", "Heating", "Mountain View"],
+    status: "available",
+    isActive: true
   },
   {
     roomNumber: "402",
@@ -179,6 +191,8 @@ const testRooms = [
     pricePerNight: 220,
     description: "Deluxe room with fireplace and mountain view",
     amenities: ["WiFi", "TV", "Heating", "Mountain View", "Fireplace"],
+    status: "available",
+    isActive: true
   },
 ];
 
@@ -270,7 +284,7 @@ async function createRoom(roomData, hotelId) {
   try {
     console.log(`Creating room: ${roomData.roomNumber} for hotel ${hotelId}`);
     const response = await axios.post(
-      `${ROOM_SERVICE_URL}/api/hotels/${hotelId}/rooms`,
+      `${ROOM_SERVICE_URL}/api/init/hotels/${hotelId}/rooms`,
       roomData,
       {
         headers: {
